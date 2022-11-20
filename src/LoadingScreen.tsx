@@ -2,13 +2,13 @@ import { useEffect, useState } from "react";
 import { ItemEntity } from "./engine/ItemEntity";
 import charsURL from "./assets/Characters_V3T.png";
 import envURL from "./assets/BitsAndBobsT.png";
-import { CharacterEntity } from "./CharacterEntity";
-import { ImageUtils, TileMap } from "./engine/TileMap";
+import { CharacterEntity } from "./engine/CharacterEntity";
+import { ImageUtils, SpriteMap } from "./engine/SpriteMap";
 import { Assets, Game } from "./App";
 import { Tile } from "./engine/Tile";
 import { CollisionMode, Entity } from "./engine/Entity";
-import { Sprite } from "./Sprite";
-import { TILE_SIZE } from "./engine/Engine";
+import { Sprite } from "./engine/Sprite";
+import { TILE_SIZE } from "./engine/engineGlobals";
 import { GameState, InteractionMode } from "./GameState";
 
 export type TileSlot = [s: Sprite | null, collides: boolean];
@@ -55,8 +55,11 @@ export function LoadingScreen() {
 
   useEffect(() => {
     async function load() {
-      const charTileMap = new TileMap(await ImageUtils.loadImage(charsURL), 16);
-      const envTileMap = new TileMap(await ImageUtils.loadImage(envURL), 16);
+      const charTileMap = new SpriteMap(
+        await ImageUtils.loadImage(charsURL),
+        16
+      );
+      const envTileMap = new SpriteMap(await ImageUtils.loadImage(envURL), 16);
 
       const w: TileSlot = [envTileMap.spriteAt(9, 5), true];
       const f: TileSlot = [envTileMap.spriteAt(9, 1), false];

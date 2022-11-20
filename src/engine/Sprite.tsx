@@ -1,10 +1,10 @@
-import { TileMap } from "./engine/TileMap";
+import { SpriteMap } from "./SpriteMap";
 
 /**
  * A single static or animated slice of a TileMap.
  */
 export class Sprite {
-  readonly tileMap: TileMap;
+  readonly tileMap: SpriteMap;
   readonly tilePositions: number[];
   readonly cWidth: number; // column with
   readonly rHeight: number; // column height
@@ -16,7 +16,7 @@ export class Sprite {
   readonly height: number;
 
   constructor(
-    map: TileMap,
+    map: SpriteMap,
     positions: number[],
     cWidth: number,
     rHeight: number,
@@ -33,6 +33,9 @@ export class Sprite {
     this.height = this.tileMap.tileSize * rHeight;
   }
 
+  /**
+   * @returns a copy of this sprite, flipped as desired
+   */
   withFlip(flip: "horizontal" | "vertical" | "both" | "none"): Sprite {
     return new Sprite(
       this.tileMap,

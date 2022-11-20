@@ -1,5 +1,5 @@
-import { Sprite } from "../Sprite";
-import { DEBUG_POSITIONS } from "./Engine";
+import { Sprite } from "./Sprite";
+import { DEBUG_POSITIONS } from "./engineGlobals";
 import { CollisionMode, Entity } from "./Entity";
 
 export class ItemEntity extends Entity {

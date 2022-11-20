@@ -3,8 +3,8 @@ import "./App.css";
 import { Engine } from "./engine/Engine";
 import { Entity } from "./engine/Entity";
 import { Tile } from "./engine/Tile";
-import { CharacterEntity } from "./CharacterEntity";
-import { TileMap } from "./engine/TileMap";
+import { CharacterEntity } from "./engine/CharacterEntity";
+import { SpriteMap } from "./engine/SpriteMap";
 import { LoadingScreen } from "./LoadingScreen";
 import { useLinkedState } from "s-state/LinkedState";
 import { useAppGlobalKeyboardShortcuts } from "./useAppGlobalKeyboardShortcuts";
@@ -13,23 +13,17 @@ import { GameState } from "./GameState";
 export default function App() {
   return (
     <div className="App">
-      <LoadingScreen></LoadingScreen>
+      <LoadingScreen />
     </div>
   );
 }
 
 export type Assets = {
-  envTileMap: TileMap;
-  charTileMap: TileMap;
-};
-
-export type EngineState = {
-  tileMap: Tile[][];
-  entities: Entity[];
+  envTileMap: SpriteMap;
+  charTileMap: SpriteMap;
 };
 
 export function Game({
-  assets,
   tileMap,
   gameState,
 }: {
@@ -37,17 +31,32 @@ export function Game({
   tileMap: Tile[][];
   gameState: GameState;
 }) {
+  useAppGlobalKeyboardShortcuts(gameState);
+  const [message] = useLinkedState(gameState.message);
   const [interactionMode, setInteractionMode] = useLinkedState(
     gameState.interactionMode
   );
-  const [message] = useLinkedState(gameState.gameCopy);
 
-  useAppGlobalKeyboardShortcuts(gameState);
+  const onClick = useCallback(
+    (entities: Entity[], tile: Tile) => {
+      // In reverese order to grab the entity that's stacked on top first
+      for (let i = entities.length - 1; i >= 0; i--) {
+        const entitiy = entities[i];
+        if (
+          entitiy instanceof CharacterEntity &&
+          interactionMode.kind === "editing"
+        ) {
+          entitiy.highlight = false;
+          setInteractionMode({ kind: "controlling", character: entitiy });
+          return;
+        }
+      }
+    },
+    [interactionMode.kind, setInteractionMode]
+  );
 
   const tileAt = useCallback(
-    (c: number, r: number) => {
-      return tileMap[r][c];
-    },
+    (c: number, r: number) => tileMap[r][c],
     [tileMap]
   );
 
@@ -57,20 +66,7 @@ export function Game({
       <Engine
         tileAt={tileAt}
         entities={gameState.entities._getRaw()}
-        onClick={(entities: Entity[], tile: Tile) => {
-          // In reverese order to grab the entity that's stacked on top first
-          for (let i = entities.length - 1; i >= 0; i--) {
-            const entitiy = entities[i];
-            if (
-              entitiy instanceof CharacterEntity &&
-              interactionMode.kind === "editing"
-            ) {
-              entitiy.highlight = false;
-              setInteractionMode({ kind: "controlling", character: entitiy });
-              return;
-            }
-          }
-        }}
+        onClick={onClick}
       />
       {message}
     </div>

@@ -1,7 +1,10 @@
-import { CollisionMode, Entity } from "./engine/Entity";
+import { CollisionMode, Entity } from "./Entity";
 import { Body } from "matter-js";
 import { Sprite } from "./Sprite";
-import { DEBUG_POSITIONS } from "./engine/Engine";
+import { entitiesAtPoint } from "./Engine";
+import { DEBUG_POSITIONS } from "./engineGlobals";
+import { GameState } from "../GameState";
+import { nullthrows, exhaustive } from "../utils";
 
 type CharacterEntitySprites = {
   down: Sprite;
@@ -138,14 +141,45 @@ export class CharacterEntity extends Entity {
   }
 }
 
-export function exhaustive(x: never): never {
-  throw new Error(`unexpected ${x} in switch statement`);
-}
+export function getEntityAtActionReach(
+  character: CharacterEntity,
+  gameState: GameState
+): Entity | null {
+  const REACH = 4;
 
-export function nullthrows<T>(x: T | null | undefined): T {
-  if (x == null) {
-    throw new Error("unexpected null");
-  } else {
-    return x;
+  let actionX, actionY;
+  switch (character.facing) {
+    case 0: {
+      actionX = character.x + character.width / 2;
+      actionY = character.y - REACH;
+      break;
+    }
+    case 1: {
+      actionX = character.x + character.width + REACH;
+      actionY = character.y + character.height / 2;
+      break;
+    }
+    case 2: {
+      actionX = character.x + character.width / 2;
+      actionY = character.y + character.height + REACH;
+      break;
+    }
+    case 3: {
+      actionX = character.x - REACH;
+      actionY = character.y + character.height / 2;
+      break;
+    }
+    default:
+      exhaustive(character.facing);
   }
+
+  const entities = entitiesAtPoint(
+    actionX,
+    actionY,
+    gameState.entities._getRaw()
+  );
+
+  // priority to the top-most
+  const entity = entities.at(-1);
+  return entity ?? null;
 }

@@ -1,39 +1,24 @@
 import {
+  Body,
+  Composite as MatterComposite,
+  Engine as MatterEngine,
+} from "matter-js";
+import {
   MutableRefObject,
   useCallback,
   useEffect,
   useRef,
   useState,
 } from "react";
-import { Sprite } from "../Sprite";
+import {
+  CANVAS_THEIGHT,
+  CANVAS_TWIDTH,
+  DEBUG_POSITIONS,
+  SCALING_FACTOR,
+  TILE_SIZE,
+} from "./engineGlobals";
 import { Entity } from "./Entity";
 import { Tile } from "./Tile";
-import {
-  Engine as MatterEngine,
-  Composite as MatterComposite,
-  Body,
-} from "matter-js";
-
-export type Point = { x: number; y: number };
-export type TPoint = { c: number; r: number };
-
-export const TILE_SIZE = 16;
-const CANVAS_TWIDTH = 10;
-const CANVAS_THEIGHT = 10;
-const SCALING_FACTOR = 4;
-export const DEBUG_POSITIONS = false;
-
-class Render {
-  static sprite(
-    ctx: CanvasRenderingContext2D,
-    sprite: Sprite,
-    x: number,
-    y: number,
-    tick: number
-  ) {
-    sprite.render(ctx, y, x, tick);
-  }
-}
 
 const seenEntities = new WeakSet<Entity>();
 const seenTiles = new WeakSet<Tile>();
@@ -162,7 +147,7 @@ function useEngineLoop(
         for (let r = 0; r < CANVAS_THEIGHT; r++) {
           const tile = tileAt(c, r);
           for (const sprite of tile.bSprites) {
-            Render.sprite(ctx, sprite, r * TILE_SIZE, c * TILE_SIZE, tick);
+            sprite.render(ctx, c * TILE_SIZE, r * TILE_SIZE, tick);
           }
         }
       }
@@ -178,7 +163,7 @@ function useEngineLoop(
         for (let r = 0; r < CANVAS_THEIGHT; r++) {
           const tile = tileAt(c, r);
           for (const sprite of tile.fSprites) {
-            Render.sprite(ctx, sprite, r * TILE_SIZE, c * TILE_SIZE, tick);
+            sprite.render(ctx, c * TILE_SIZE, r * TILE_SIZE, tick);
           }
           if (DEBUG_POSITIONS) {
             ctx.fillStyle = "red";

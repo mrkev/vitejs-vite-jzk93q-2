@@ -1,9 +1,9 @@
-import { Sprite } from "../Sprite";
+import { Sprite } from "./Sprite";
 
 /**
  * An image containing multiple sprites
  */
-export class TileMap {
+export class SpriteMap {
   readonly image: HTMLImageElement;
   readonly tileSize: number;
   readonly cols: number;

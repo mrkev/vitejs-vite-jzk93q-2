@@ -1,53 +1,11 @@
 import { useEffect } from "react";
-import { GameState } from "./GameState";
-import { CharacterEntity, exhaustive } from "./CharacterEntity";
-import { Entity } from "./engine/Entity";
+import { getEntityAtActionReach } from "./engine/CharacterEntity";
 import { ItemEntity } from "./engine/ItemEntity";
-import { entitiesAtPoint } from "./engine/Engine";
+import { GameState } from "./GameState";
 
-function getEntityAtActionReach(
-  character: CharacterEntity,
-  gameState: GameState
-): Entity | null {
-  const REACH = 4;
-
-  let actionX, actionY;
-  switch (character.facing) {
-    case 0: {
-      actionX = character.x + character.width / 2;
-      actionY = character.y - REACH;
-      break;
-    }
-    case 1: {
-      actionX = character.x + character.width + REACH;
-      actionY = character.y + character.height / 2;
-      break;
-    }
-    case 2: {
-      actionX = character.x + character.width / 2;
-      actionY = character.y + character.height + REACH;
-      break;
-    }
-    case 3: {
-      actionX = character.x - REACH;
-      actionY = character.y + character.height / 2;
-      break;
-    }
-    default:
-      exhaustive(character.facing);
-  }
-
-  const entities = entitiesAtPoint(
-    actionX,
-    actionY,
-    gameState.entities._getRaw()
-  );
-
-  // priority to the top-most
-  const entity = entities.at(-1);
-  return entity ?? null;
-}
-
+/**
+ * Handles keyboard interaction
+ */
 export function useAppGlobalKeyboardShortcuts(gameState: GameState) {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -87,11 +45,11 @@ export function useAppGlobalKeyboardShortcuts(gameState: GameState) {
           case " ": {
             const entity = getEntityAtActionReach(char, gameState);
             if (entity == null) {
-              gameState.gameCopy.set("nothing to interact");
+              gameState.message.set("nothing to interact");
               break;
             }
             if (entity instanceof ItemEntity) {
-              gameState.gameCopy.set(entity.description);
+              gameState.message.set(entity.description);
             }
 
             break;
@@ -107,7 +65,6 @@ export function useAppGlobalKeyboardShortcuts(gameState: GameState) {
       // Character Control
       if (interactionMode.kind === "controlling") {
         const char = interactionMode.character;
-        // Listening
         switch (e.key) {
           case "w":
             char.vy += 1;
