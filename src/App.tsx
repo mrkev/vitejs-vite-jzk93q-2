@@ -1,10 +1,29 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import { Engine, Entity, Tile } from "./engine/Engine";
+import { Engine } from "./engine/Engine";
+import { Entity } from "./engine/Entity";
+import { Tile } from "./engine/Tile";
 import charsURL from "./assets/Characters_V3.png";
 import envURL from "./assets/BitsAndBobs.png";
 import { CharacterEntity, Sprite } from "./CharacterEntity";
-import { ImageUtils, TileMap } from "./TileMap";
+import { ImageUtils, TileMap } from "./engine/TileMap";
+
+type TileSlot = [f: Sprite | null, b: Sprite | null, collides: boolean];
+
+function mapOfSpec(spec: TileSlot[][]): Tile[][] {
+  const result = [];
+
+  for (let r = 0; r < spec.length; r++) {
+    const row: Tile[] = [];
+    result.push(row);
+    for (let c = 0; c < spec.length; c++) {
+      const [f, b, collides] = spec[r][c];
+      row.push(new Tile(f ? [f] : [], b ? [b] : [], collides, r, c));
+    }
+  }
+
+  return result;
+}
 
 function App() {
   // const [loadingState, setLoadingState] = useState("loading");
@@ -21,10 +40,10 @@ function App() {
 
       console.log(envTileMap);
 
-      const w = new Tile([], [envTileMap.spriteAt(9, 5)], true);
-      const f = new Tile([], [envTileMap.spriteAt(9, 1)], false);
+      const w: TileSlot = [null, envTileMap.spriteAt(9, 5), true];
+      const f: TileSlot = [null, envTileMap.spriteAt(9, 1), false];
 
-      const map = [
+      const spec = [
         [w, w, w, w, w, w, w, w, w, w],
         [w, f, f, f, f, f, f, f, f, w],
         [w, f, f, f, f, f, f, f, f, w],
@@ -36,7 +55,7 @@ function App() {
         [w, f, f, f, f, f, f, f, f, w],
         [w, w, w, w, w, w, w, w, w, w],
       ];
-
+      const map = mapOfSpec(spec);
       const [down, up, right] = charTileMap.sprites(17, 18, 19);
       const left = new Sprite(right.tileMap, right.tilePositions, "horizontal");
       const walkDown = charTileMap.spriteAnimating([21, 17, 22, 17]);

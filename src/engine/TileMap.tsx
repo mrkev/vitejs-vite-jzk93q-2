@@ -1,4 +1,4 @@
-import { Sprite } from "./CharacterEntity";
+import { Sprite } from "../CharacterEntity";
 
 export class TileMap {
   readonly image: HTMLImageElement;

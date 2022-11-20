@@ -1,5 +1,6 @@
-import { Entity } from "./engine/Engine";
-import { TileMap } from "./TileMap";
+import { Entity } from "./engine/Entity";
+import { TileMap } from "./engine/TileMap";
+import { Bodies, Body } from "matter-js";
 
 export class Sprite {
   readonly tileMap: TileMap;
@@ -80,8 +81,15 @@ export class CharacterEntity extends Entity {
   sprites: CharacterEntitySprites;
   facing: 0 | 1 | 2 | 3 = 2; // like a clock, 0 is up, then 1, etc
 
-  constructor(x: number, y: number, sprites: CharacterEntitySprites) {
-    super(x, y);
+  constructor(
+    x: number,
+    y: number,
+    sprites: CharacterEntitySprites,
+    collides: boolean = true
+  ) {
+    const width = sprites.down.width;
+    const height = sprites.down.height;
+    super(x, y, width, height, collides);
     this.sprites = sprites;
     window.addEventListener("keydown", this.onKeyDown);
     window.addEventListener("keyup", this.onKeyUp);
@@ -125,20 +133,24 @@ export class CharacterEntity extends Entity {
   };
 
   update(): void {
-    const { vx, vy } = this;
-    // console.log(vx, vy);
+    // Update position
     this.x += this.vx;
     this.y += this.vy;
-    if (this.vx > 0) {
-      this.facing = 1;
-    } else if (this.vx < 0) {
-      this.facing = 3;
+
+    // Update physics
+    if (this.mBody) {
+      Body.setPosition(this.mBody, { x: this.x, y: this.y });
     }
 
+    // Update facing direction
     if (this.vy > 0) {
       this.facing = 2;
     } else if (this.vy < 0) {
       this.facing = 0;
+    } else if (this.vx > 0) {
+      this.facing = 1;
+    } else if (this.vx < 0) {
+      this.facing = 3;
     }
   }
 
