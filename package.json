@@ -11,7 +11,8 @@
   "dependencies": {
     "matter-js": "^0.18.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "s-state": "https://gitpkg.now.sh/mrkev/pamba/src/lib/state?s-state"
   },
   "devDependencies": {
     "@types/matter-js": "^0.18.2",

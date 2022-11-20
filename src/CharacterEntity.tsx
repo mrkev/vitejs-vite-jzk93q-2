@@ -36,7 +36,7 @@ export class CharacterEntity extends Entity {
 
   onKeyDown = (e: KeyboardEvent) => {
     if (e.repeat) return;
-    console.log("DOWN");
+    // console.log("DOWN");
     switch (e.key) {
       case "w":
         this.vy -= 1;
