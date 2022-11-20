@@ -1,0 +1,4 @@
+
+Transparency:
+magick Characters_V3.png -format "%[hex:p{0,0}]" info:         
+convert Characters_V3.png -transparent #65FF00FF ObjectOnTransparent.png

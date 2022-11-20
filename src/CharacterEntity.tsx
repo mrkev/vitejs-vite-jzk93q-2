@@ -1,67 +1,6 @@
 import { Entity } from "./engine/Entity";
-import { TileMap } from "./engine/TileMap";
-import { Bodies, Body } from "matter-js";
-
-export class Sprite {
-  readonly tileMap: TileMap;
-  readonly tilePositions: number[];
-  readonly width: number;
-  readonly height: number;
-  readonly flip: "horizontal" | "vertical" | "both" | "none";
-  readonly animSpeed: number;
-  constructor(
-    map: TileMap,
-    positions: number[],
-    flip: "horizontal" | "vertical" | "both" | "none" = "none",
-    animSpeed: number = 1
-  ) {
-    this.tileMap = map;
-    this.tilePositions = positions;
-    this.width = map.tileSize;
-    this.height = map.tileSize;
-    this.flip = flip;
-    this.animSpeed = animSpeed;
-  }
-
-  render(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number) {
-    const pos =
-      this.tilePositions[
-        Math.floor(tick / this.animSpeed) % this.tilePositions.length
-      ];
-    const row = Math.floor(pos / this.tileMap.cols);
-    const col = pos - row * this.tileMap.cols;
-    const size = this.tileMap.tileSize;
-
-    const horizontal = this.flip === "horizontal" || this.flip === "both";
-    const vertical = this.flip === "vertical" || this.flip === "both";
-
-    ctx.save();
-    ctx.setTransform(
-      horizontal ? -1 : 1,
-      0,
-      0,
-      vertical ? -1 : 1,
-      x + (horizontal ? this.width : 0),
-      y + (vertical ? this.height : 0)
-    );
-
-    ctx.drawImage(
-      this.tileMap.image,
-      // source
-      col * size,
-      row * size,
-      size,
-      size,
-      // destination
-      0, // x unecessary, we already translated above
-      0, // y unecessary, we already translated above
-      size,
-      size
-    );
-
-    ctx.restore();
-  }
-}
+import { Body } from "matter-js";
+import { Sprite } from "./Sprite";
 
 type CharacterEntitySprites = {
   down: Sprite;
@@ -87,8 +26,8 @@ export class CharacterEntity extends Entity {
     sprites: CharacterEntitySprites,
     collides: boolean = true
   ) {
-    const width = sprites.down.width;
-    const height = sprites.down.height;
+    const width = sprites.down.tileMap.tileSize;
+    const height = sprites.down.tileMap.tileSize;
     super(x, y, width, height, collides);
     this.sprites = sprites;
     window.addEventListener("keydown", this.onKeyDown);

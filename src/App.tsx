@@ -1,24 +1,28 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import { Engine } from "./engine/Engine";
-import { Entity } from "./engine/Entity";
+import { Entity, ItemEntity } from "./engine/Entity";
 import { Tile } from "./engine/Tile";
-import charsURL from "./assets/Characters_V3.png";
-import envURL from "./assets/BitsAndBobs.png";
-import { CharacterEntity, Sprite } from "./CharacterEntity";
+import charsURL from "./assets/Characters_V3T.png";
+import envURL from "./assets/BitsAndBobsT.png";
+import { CharacterEntity } from "./CharacterEntity";
+import { Sprite } from "./Sprite";
 import { ImageUtils, TileMap } from "./engine/TileMap";
 
-type TileSlot = [f: Sprite | null, b: Sprite | null, collides: boolean];
+type TileSlot = [s: Sprite | null, collides: boolean];
 
-function mapOfSpec(spec: TileSlot[][]): Tile[][] {
+function mapOfSpec(bg: TileSlot[][], fg: TileSlot[][]): Tile[][] {
   const result = [];
 
-  for (let r = 0; r < spec.length; r++) {
+  for (let r = 0; r < bg.length; r++) {
     const row: Tile[] = [];
     result.push(row);
-    for (let c = 0; c < spec.length; c++) {
-      const [f, b, collides] = spec[r][c];
-      row.push(new Tile(f ? [f] : [], b ? [b] : [], collides, r, c));
+    for (let c = 0; c < bg.length; c++) {
+      const [b, collides] = bg[r][c];
+      const [f, collides2] = fg[r][c];
+      row.push(
+        new Tile(f ? [f] : [], b ? [b] : [], collides || collides2, r, c)
+      );
     }
   }
 
@@ -40,10 +44,21 @@ function App() {
 
       console.log(envTileMap);
 
-      const w: TileSlot = [null, envTileMap.spriteAt(9, 5), true];
-      const f: TileSlot = [null, envTileMap.spriteAt(9, 1), false];
+      const w: TileSlot = [envTileMap.spriteAt(9, 5), true];
+      const f: TileSlot = [envTileMap.spriteAt(9, 1), false];
 
-      const spec = [
+      const n: TileSlot = [null, false];
+      const sFlowers: TileSlot = [envTileMap.spriteAt(2, 7), false];
+
+      const sKitchenStore: TileSlot = [envTileMap.spriteAt(3, 1), true];
+      const sStove: TileSlot = [envTileMap.spriteAt(3, 0), true];
+      const sTV: TileSlot = [envTileMap.spriteAt(2, 0), true];
+      const sDrawers: TileSlot = [envTileMap.spriteAt(2, 4), true];
+      const sDresser: TileSlot = [envTileMap.spriteAt(2, 5), true];
+      const sFlowerbed: TileSlot = [envTileMap.spriteAt(2, 6), true];
+      const sPainting: TileSlot = [envTileMap.spriteAt(1, 0), true];
+
+      const bg = [
         [w, w, w, w, w, w, w, w, w, w],
         [w, f, f, f, f, f, f, f, f, w],
         [w, f, f, f, f, f, f, f, f, w],
@@ -55,17 +70,27 @@ function App() {
         [w, f, f, f, f, f, f, f, f, w],
         [w, w, w, w, w, w, w, w, w, w],
       ];
-      const map = mapOfSpec(spec);
+
+      const fg = [
+        [n, n, sPainting, n, n, n, n, n, n, n],
+        [n, n, n, n, n, sKitchenStore, sKitchenStore, sKitchenStore, sStove, n],
+        [n, n, n, n, n, n, n, n, n, n],
+        [n, n, n, n, n, n, n, n, n, n],
+        [n, n, n, n, n, n, n, n, n, n],
+        [n, sFlowers, n, n, n, n, sTV, n, n, n],
+        [n, sDresser, sDrawers, n, n, n, n, n, n, n],
+        [n, n, n, n, n, n, n, n, n, n],
+        [n, n, n, sFlowerbed, n, n, sFlowerbed, n, n, n],
+        [n, n, n, n, n, n, n, n, n, n],
+      ];
+
+      const map = mapOfSpec(bg, fg);
       const [down, up, right] = charTileMap.sprites(17, 18, 19);
-      const left = new Sprite(right.tileMap, right.tilePositions, "horizontal");
+      const left = right.withFlip("horizontal");
       const walkDown = charTileMap.spriteAnimating([21, 17, 22, 17]);
       const walkUp = charTileMap.spriteAnimating([23, 18, 24, 18]);
       const walkRight = charTileMap.spriteAnimating([25, 19, 26, 19]);
-      const walkLeft = new Sprite(
-        walkRight.tileMap,
-        walkRight.tilePositions,
-        "horizontal"
-      );
+      const walkLeft = walkRight.withFlip("horizontal");
 
       const charEntity = new CharacterEntity(32, 32, {
         down,
@@ -77,6 +102,16 @@ function App() {
         walkRight,
         walkLeft,
       });
+
+      const drawer = new ItemEntity(envTileMap.spriteAt(3, 1), 64, 32, true);
+
+      const fridge = new ItemEntity(
+        envTileMap.spriteAt(3, 2, 1, 2),
+        64,
+        64,
+        true
+      );
+
       setCharTiles(charTileMap);
       setEnvTiles(envTileMap);
       setEntities([charEntity]);

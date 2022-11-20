@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Sprite } from "../CharacterEntity";
+import { Sprite } from "../Sprite";
 import { Entity } from "./Entity";
 import { Tile } from "./Tile";
 import {
@@ -23,12 +23,14 @@ class Render {
     y: number,
     tick: number
   ) {
-    sprite.render(ctx, x, y, tick);
+    sprite.render(ctx, y, x, tick);
   }
 }
 
 const seenEntities = new WeakSet<Entity>();
 const seenTiles = new WeakSet<Tile>();
+
+export const DEBUG_POSITIONS = false;
 
 export function Engine({
   tileAt,
@@ -48,6 +50,7 @@ export function Engine({
     if (canvas == null || ctx == null) {
       return;
     }
+    ctx.imageSmoothingEnabled = false;
 
     let nextRaf = 0; // todo is setting to default 0 an issue?
     let lastTime = -1;
@@ -109,16 +112,21 @@ export function Engine({
       }
 
       // Render foreground tiles
+
       for (let c = 0; c < CANVAS_TWIDTH; c++) {
         for (let r = 0; r < CANVAS_THEIGHT; r++) {
           const tile = tileAt(c, r);
-          // if (tile.collides) {
-          //   ctx.fillStyle = "#555";dddd
-          // } else {
-          //   ctx.fillStyle = "#eee";
-          // }
           for (const sprite of tile.fSprites) {
             Render.sprite(ctx, sprite, r * TILE_SIZE, c * TILE_SIZE, tick);
+          }
+          if (DEBUG_POSITIONS) {
+            ctx.fillStyle = "red";
+            ctx.font = "8px Helvetica";
+            ctx.fillText(
+              `${tile.row},${tile.col}`,
+              r * TILE_SIZE,
+              c * TILE_SIZE + 8
+            );
           }
         }
       }

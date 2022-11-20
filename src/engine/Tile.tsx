@@ -1,4 +1,4 @@
-import { Sprite } from "../CharacterEntity";
+import { Sprite } from "../Sprite";
 import { Bodies, Body } from "matter-js";
 
 export class Tile {
