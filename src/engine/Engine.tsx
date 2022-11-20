@@ -5,6 +5,7 @@ import { Tile } from "./Tile";
 import {
   Engine as MatterEngine,
   Composite as MatterComposite,
+  Body,
 } from "matter-js";
 
 export type Point = { x: number; y: number };
@@ -82,10 +83,12 @@ export function Engine({
       MatterEngine.update(matterEngine, deltaTime);
       for (const entity of entities) {
         if (entity.mBody) {
-          console.log(entity.mBody.position.x);
+          // console.log(entity.mBody.position.x);
           // TODO: should we round here or at render time?
           entity.x = Math.round(entity.mBody.position.x);
           entity.y = Math.round(entity.mBody.position.y);
+
+          Body.setPosition(entity.mBody, { x: entity.x, y: entity.y });
         }
       }
 

@@ -115,7 +115,7 @@ export class CharacterEntity extends Entity {
   };
 
   onKeyUp = (e: KeyboardEvent) => {
-    console.log("KEYUP");
+    // console.log("KEYUP");
     switch (e.key) {
       case "w":
         this.vy += 1;
@@ -134,12 +134,12 @@ export class CharacterEntity extends Entity {
 
   update(): void {
     // Update position
-    this.x += this.vx;
-    this.y += this.vy;
-
     // Update physics
     if (this.mBody) {
-      Body.setPosition(this.mBody, { x: this.x, y: this.y });
+      Body.setVelocity(this.mBody, { x: this.vx, y: this.vy });
+    } else {
+      this.x += this.vx;
+      this.y += this.vy;
     }
 
     // Update facing direction

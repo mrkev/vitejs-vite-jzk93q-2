@@ -23,7 +23,7 @@ export abstract class Entity {
     if (this.collides) {
       this.mBody = Bodies.rectangle(x, y, width, height, {
         restitution: 0,
-        friction: 0.1,
+        friction: 0,
       });
     } else {
       this.mBody = null;

@@ -24,6 +24,7 @@ export class Tile {
       this.mBody = Bodies.rectangle(col * 16, row * 16, 16, 16, {
         isStatic: true,
         restitution: 0,
+        friction: 0,
       });
     } else {
       this.mBody = null;
