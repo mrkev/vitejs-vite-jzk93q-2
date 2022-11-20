@@ -37,13 +37,26 @@ function App() {
         [w, w, w, w, w, w, w, w, w, w],
       ];
 
-      const [idle, up, right] = charTileMap.sprites(17, 18, 19);
+      const [down, up, right] = charTileMap.sprites(17, 18, 19);
+      const left = new Sprite(right.tileMap, right.tilePositions, "horizontal");
+      const walkDown = charTileMap.spriteAnimating([21, 17, 22, 17]);
+      const walkUp = charTileMap.spriteAnimating([23, 18, 24, 18]);
+      const walkRight = charTileMap.spriteAnimating([25, 19, 26, 19]);
+      const walkLeft = new Sprite(
+        walkRight.tileMap,
+        walkRight.tilePositions,
+        "horizontal"
+      );
 
       const charEntity = new CharacterEntity(32, 32, {
-        idle,
+        down,
         up,
         right,
-        left: new Sprite(right.tileMap, right.tilePos, "horizontal"),
+        left,
+        walkDown,
+        walkUp,
+        walkRight,
+        walkLeft,
       });
       setCharTiles(charTileMap);
       setEnvTiles(envTileMap);

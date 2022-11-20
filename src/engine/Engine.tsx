@@ -25,7 +25,7 @@ export abstract class Entity {
 
   abstract destroy(): void;
   abstract update(): void;
-  abstract render(ctx: CanvasRenderingContext2D): void;
+  abstract render(ctx: CanvasRenderingContext2D, tick: number): void;
 }
 
 const TILE_SIZE = 16;
@@ -37,9 +37,10 @@ class Render {
     ctx: CanvasRenderingContext2D,
     sprite: Sprite,
     x: number,
-    y: number
+    y: number,
+    tick: number
   ) {
-    sprite.render(ctx, x, y);
+    sprite.render(ctx, x, y, tick);
   }
 }
 
@@ -61,6 +62,7 @@ export function Engine({
 
     let nextRaf = 0; // todo is this an issue
     const frame = function frame(time: number) {
+      const tick = (time / 200) >> 0;
       for (let c = 0; c < CANVAS_TWIDTH; c++) {
         for (let r = 0; r < CANVAS_THEIGHT; r++) {
           const tile = tileAt(c, r);
@@ -70,18 +72,18 @@ export function Engine({
           //   ctx.fillStyle = "#eee";
           // }
           for (const sprite of tile.bSprites) {
-            Render.sprite(ctx, sprite, r * TILE_SIZE, c * TILE_SIZE);
+            Render.sprite(ctx, sprite, r * TILE_SIZE, c * TILE_SIZE, tick);
           }
 
           for (const sprite of tile.fSprites) {
-            Render.sprite(ctx, sprite, r * TILE_SIZE, c * TILE_SIZE);
+            Render.sprite(ctx, sprite, r * TILE_SIZE, c * TILE_SIZE, tick);
           }
         }
       }
 
       for (const entity of entities) {
         entity.update();
-        entity.render(ctx);
+        entity.render(ctx, tick);
       }
 
       nextRaf = requestAnimationFrame(frame);

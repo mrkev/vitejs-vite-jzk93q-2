@@ -12,13 +12,25 @@ export class TileMap {
     this.rows = (this.image.height / tileSize) >> 0;
   }
 
-  spriteAt(row: number, col: number): Sprite {
+  public spriteAt(row: number, col: number): Sprite {
     const num = row * this.cols + col;
-    return new Sprite(this, num);
+    return new Sprite(this, [num]);
   }
 
-  sprites(...nums: number[]): Sprite[] {
-    return nums.map((n) => new Sprite(this, n));
+  public spriteNumber(num: number): Sprite {
+    return new Sprite(this, [num]);
+  }
+
+  public sprites(...nums: number[]): Sprite[] {
+    return nums.map((n) => new Sprite(this, [n]));
+  }
+
+  public spriteAnimating(nums: number[], speed?: number): Sprite {
+    return new Sprite(this, nums, "none", speed);
+  }
+
+  public spritesAnimating(nums: number[], speed?: number): Sprite {
+    return new Sprite(this, nums, "none", speed);
   }
 }
 

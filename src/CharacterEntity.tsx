@@ -3,28 +3,32 @@ import { TileMap } from "./TileMap";
 
 export class Sprite {
   readonly tileMap: TileMap;
-  readonly tilePos: number;
+  readonly tilePositions: number[];
   readonly width: number;
   readonly height: number;
   readonly flip: "horizontal" | "vertical" | "both" | "none";
-  readonly keyColor: string | null = null;
+  readonly animSpeed: number;
   constructor(
     map: TileMap,
-    position: number,
+    positions: number[],
     flip: "horizontal" | "vertical" | "both" | "none" = "none",
-    keyColor: string | null = null
+    animSpeed: number = 1
   ) {
     this.tileMap = map;
-    this.tilePos = position;
+    this.tilePositions = positions;
     this.width = map.tileSize;
     this.height = map.tileSize;
     this.flip = flip;
-    this.keyColor = keyColor;
+    this.animSpeed = animSpeed;
   }
 
-  render(ctx: CanvasRenderingContext2D, x: number, y: number) {
-    const row = Math.floor(this.tilePos / this.tileMap.cols);
-    const col = this.tilePos - row * this.tileMap.cols;
+  render(ctx: CanvasRenderingContext2D, x: number, y: number, tick: number) {
+    const pos =
+      this.tilePositions[
+        Math.floor(tick / this.animSpeed) % this.tilePositions.length
+      ];
+    const row = Math.floor(pos / this.tileMap.cols);
+    const col = pos - row * this.tileMap.cols;
     const size = this.tileMap.tileSize;
 
     const horizontal = this.flip === "horizontal" || this.flip === "both";
@@ -59,10 +63,15 @@ export class Sprite {
 }
 
 type CharacterEntitySprites = {
-  idle: Sprite;
+  down: Sprite;
   up: Sprite;
   right: Sprite;
   left: Sprite;
+  //
+  walkDown: Sprite;
+  walkUp: Sprite;
+  walkRight: Sprite;
+  walkLeft: Sprite;
 };
 
 export class CharacterEntity extends Entity {
@@ -133,23 +142,43 @@ export class CharacterEntity extends Entity {
     }
   }
 
-  render(ctx: CanvasRenderingContext2D): void {
+  render(ctx: CanvasRenderingContext2D, tick: number): void {
     ctx.fillStyle = "red";
     // ctx.fillRect(this.x, this.y, 32, 32);
-    switch (this.facing) {
-      case 0:
-        this.sprites.up.render(ctx, this.x, this.y);
-        break;
-      case 1:
-        this.sprites.right.render(ctx, this.x, this.y);
-        break;
-      case 2:
-        this.sprites.idle.render(ctx, this.x, this.y);
-        break;
-      case 3:
-        this.sprites.left.render(ctx, this.x, this.y);
-        break;
 
+    switch (this.facing) {
+      case 0: {
+        if (this.vy === 0) {
+          this.sprites.up.render(ctx, this.x, this.y, tick);
+        } else {
+          this.sprites.walkUp.render(ctx, this.x, this.y, tick);
+        }
+        break;
+      }
+      case 1: {
+        if (this.vx === 0) {
+          this.sprites.right.render(ctx, this.x, this.y, tick);
+        } else {
+          this.sprites.walkRight.render(ctx, this.x, this.y, tick);
+        }
+        break;
+      }
+      case 2: {
+        if (this.vy === 0) {
+          this.sprites.down.render(ctx, this.x, this.y, tick);
+        } else {
+          this.sprites.walkDown.render(ctx, this.x, this.y, tick);
+        }
+        break;
+      }
+      case 3: {
+        if (this.vx === 0) {
+          this.sprites.left.render(ctx, this.x, this.y, tick);
+        } else {
+          this.sprites.walkLeft.render(ctx, this.x, this.y, tick);
+        }
+        break;
+      }
       default:
         exhaustive(this.facing);
     }
