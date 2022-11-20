@@ -16,6 +16,6 @@ export class GameState {
   constructor(interactionMode: InteractionMode, entities: Entity[]) {
     this.interactionMode = SPrimitive.of(interactionMode);
     this.entities = LinkedArray.create(entities);
-    this.message = SPrimitive.of("[Space] interact");
+    this.message = SPrimitive.of("[wasd] move | [Space] interact");
   }
 }
