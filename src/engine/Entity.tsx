@@ -9,6 +9,7 @@ export abstract class Entity {
   readonly height: number;
   readonly collides: boolean;
   readonly mBody: Body | null;
+  highlight: boolean = false;
 
   constructor(
     x: number,
@@ -55,6 +56,7 @@ export class ItemEntity extends Entity {
 
   render(ctx: CanvasRenderingContext2D, tick: number): void {
     this.sprite.render(ctx, this.x, this.y, tick);
+
     if (DEBUG_POSITIONS && this.mBody) {
       const { min, max } = this.mBody.bounds;
 

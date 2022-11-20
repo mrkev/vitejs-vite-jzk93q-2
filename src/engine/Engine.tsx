@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import {
+  MutableRefObject,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Sprite } from "../Sprite";
 import { Entity } from "./Entity";
 import { Tile } from "./Tile";
@@ -14,6 +20,7 @@ export type TPoint = { c: number; r: number };
 const TILE_SIZE = 16;
 const CANVAS_TWIDTH = 10;
 const CANVAS_THEIGHT = 10;
+const SCALING_FACTOR = 4;
 
 class Render {
   static sprite(
@@ -32,14 +39,81 @@ const seenTiles = new WeakSet<Tile>();
 
 export const DEBUG_POSITIONS = false;
 
+export type EngineClickHandler = (entities: Entity[], tile: Tile) => void;
+
 export function Engine({
   tileAt,
   entities,
+  onClick,
 }: {
   tileAt: (col: number, row: number) => Tile;
   entities: Entity[];
+  onClick?: EngineClickHandler;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  const onCanvasClick = useEngineClickEvent(
+    entities,
+    tileAt,
+    canvasRef,
+    onClick
+  );
+
+  useEngineLoop(canvasRef, tileAt, entities);
+
+  return (
+    <canvas
+      style={{ background: "gray" }}
+      width={TILE_SIZE * 10}
+      height={TILE_SIZE * 10}
+      ref={canvasRef}
+      onClick={onCanvasClick}
+    />
+  );
+}
+
+function useEngineClickEvent(
+  entities: Entity[],
+  tileAt: (col: number, row: number) => Tile,
+  canvasRef: MutableRefObject<HTMLCanvasElement | null>,
+  onClick?: EngineClickHandler
+) {
+  return useCallback(
+    (e: React.MouseEvent<HTMLCanvasElement>): void => {
+      // todo: !
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const rect = canvasRef.current!.getBoundingClientRect();
+      const clickX = (e.clientX - rect.left) / SCALING_FACTOR;
+      const clickY = (e.clientY - rect.top) / SCALING_FACTOR;
+
+      const clickedEntities = [];
+      for (const entity of entities) {
+        const { x, y, width, height } = entity;
+        if (
+          clickX > x &&
+          clickX < x + width &&
+          clickY > y &&
+          clickY < y + height
+        ) {
+          clickedEntities.push(entity);
+        }
+      }
+
+      const row = (clickY / TILE_SIZE) >> 0;
+      const col = (clickX / TILE_SIZE) >> 0;
+
+      const tile = tileAt(col, row);
+      onClick?.(clickedEntities, tile);
+    },
+    [canvasRef, entities, onClick, tileAt]
+  );
+}
+
+function useEngineLoop(
+  canvasRef: MutableRefObject<HTMLCanvasElement | null>,
+  tileAt: (col: number, row: number) => Tile,
+  entities: Entity[]
+) {
   const [matterEngine] = useState<MatterEngine>(() =>
     MatterEngine.create({ gravity: { x: 0, y: 0 } })
   );
@@ -112,7 +186,6 @@ export function Engine({
       }
 
       // Render foreground tiles
-
       for (let c = 0; c < CANVAS_TWIDTH; c++) {
         for (let r = 0; r < CANVAS_THEIGHT; r++) {
           const tile = tileAt(c, r);
@@ -143,14 +216,5 @@ export function Engine({
       //   entity.destroy();
       // }
     };
-  }, []);
-
-  return (
-    <canvas
-      style={{ background: "gray" }}
-      width={TILE_SIZE * 10}
-      height={TILE_SIZE * 10}
-      ref={canvasRef}
-    />
-  );
+  }, [canvasRef, entities, matterEngine, tileAt]);
 }

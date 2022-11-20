@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import "./App.css";
 import { Engine } from "./engine/Engine";
 import { Entity } from "./engine/Entity";
@@ -8,6 +8,7 @@ import { Sprite } from "./Sprite";
 import { TileMap } from "./engine/TileMap";
 import { LoadingScreen } from "./LoadingScreen";
 import { SPrimitive, useLinkedState } from "s-state/LinkedState";
+import { useAppGlobalKeyboardShortcuts } from "./useAppGlobalKeyboardShortcuts";
 
 export type TileSlot = [s: Sprite | null, collides: boolean];
 
@@ -80,49 +81,40 @@ export function Game({
     return new GameState(interactionMode);
   });
 
-  const [interactionMode] = useLinkedState(gameState.interactionMode);
+  const [interactionMode, setInteractionMode] = useLinkedState(
+    gameState.interactionMode
+  );
 
   useAppGlobalKeyboardShortcuts(gameState);
 
-  const tileAt = (c: number, r: number) => {
-    return engineState.tileMap[r][c];
-  };
+  const tileAt = useCallback(
+    (c: number, r: number) => {
+      return engineState.tileMap[r][c];
+    },
+    [engineState.tileMap]
+  );
 
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
       {interactionMode.kind}
-      <Engine tileAt={tileAt} entities={engineState.entities} />
+      <Engine
+        tileAt={tileAt}
+        entities={engineState.entities}
+        onClick={(entities: Entity[], tile: Tile) => {
+          // In reverese order to grab the entity that's stacked on top first
+          for (let i = entities.length - 1; i >= 0; i--) {
+            const entitiy = entities[i];
+            if (
+              entitiy instanceof CharacterEntity &&
+              interactionMode.kind === "editing"
+            ) {
+              entitiy.highlight = false;
+              setInteractionMode({ kind: "controlling", character: entitiy });
+              return;
+            }
+          }
+        }}
+      />
     </div>
   );
-}
-
-function useAppGlobalKeyboardShortcuts(gameState: GameState) {
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.repeat) return;
-      console.log("DOWN", e.key, ".");
-      switch (e.key) {
-        case "Escape": {
-          if (gameState.interactionMode.peek().kind === "controlling") {
-            gameState.interactionMode.set({
-              kind: "editing",
-            });
-          }
-        }
-      }
-    };
-
-    const onKeyUp = (e: KeyboardEvent) => {
-      // console.log("KEYUP");
-      // switch (e.key) {
-      // }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    window.addEventListener("keyup", onKeyUp);
-    return () => {
-      window.removeEventListener("keydown", onKeyDown);
-      window.removeEventListener("keyup", onKeyUp);
-    };
-  }, []);
 }

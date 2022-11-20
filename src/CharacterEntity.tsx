@@ -30,46 +30,7 @@ export class CharacterEntity extends Entity {
     const height = sprites.down.tileMap.tileSize;
     super(x, y, width, height, collides);
     this.sprites = sprites;
-    window.addEventListener("keydown", this.onKeyDown);
-    window.addEventListener("keyup", this.onKeyUp);
   }
-
-  onKeyDown = (e: KeyboardEvent) => {
-    if (e.repeat) return;
-    // console.log("DOWN");
-    switch (e.key) {
-      case "w":
-        this.vy -= 1;
-        break;
-      case "a":
-        this.vx -= 1;
-        break;
-      case "s":
-        this.vy += 1;
-        break;
-      case "d":
-        this.vx += 1;
-        break;
-    }
-  };
-
-  onKeyUp = (e: KeyboardEvent) => {
-    // console.log("KEYUP");
-    switch (e.key) {
-      case "w":
-        this.vy += 1;
-        break;
-      case "a":
-        this.vx += 1;
-        break;
-      case "s":
-        this.vy -= 1;
-        break;
-      case "d":
-        this.vx -= 1;
-        break;
-    }
-  };
 
   update(): void {
     // Update position
@@ -96,6 +57,12 @@ export class CharacterEntity extends Entity {
   render(ctx: CanvasRenderingContext2D, tick: number): void {
     ctx.fillStyle = "red";
     // ctx.fillRect(this.x, this.y, 32, 32);
+
+    if (this.highlight) {
+      ctx.fillStyle = "#65FF00";
+      console.log("here");
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+    }
 
     switch (this.facing) {
       case 0: {
@@ -136,8 +103,7 @@ export class CharacterEntity extends Entity {
   }
 
   destroy(): void {
-    window.removeEventListener("keydown", this.onKeyDown);
-    window.removeEventListener("keyup", this.onKeyUp);
+    // noop
   }
 }
 
