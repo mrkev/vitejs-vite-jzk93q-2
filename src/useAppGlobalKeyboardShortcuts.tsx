@@ -1,11 +1,58 @@
 import { useEffect } from "react";
-import { GameState } from "./App";
+import { GameState } from "./GameState";
+import { CharacterEntity, exhaustive } from "./CharacterEntity";
+import { Entity } from "./engine/Entity";
+import { ItemEntity } from "./engine/ItemEntity";
+import { entitiesAtPoint } from "./engine/Engine";
+
+function getEntityAtActionReach(
+  character: CharacterEntity,
+  gameState: GameState
+): Entity | null {
+  const REACH = 4;
+
+  let actionX, actionY;
+  switch (character.facing) {
+    case 0: {
+      actionX = character.x + character.width / 2;
+      actionY = character.y - REACH;
+      break;
+    }
+    case 1: {
+      actionX = character.x + character.width + REACH;
+      actionY = character.y + character.height / 2;
+      break;
+    }
+    case 2: {
+      actionX = character.x + character.width / 2;
+      actionY = character.y + character.height + REACH;
+      break;
+    }
+    case 3: {
+      actionX = character.x - REACH;
+      actionY = character.y + character.height / 2;
+      break;
+    }
+    default:
+      exhaustive(character.facing);
+  }
+
+  const entities = entitiesAtPoint(
+    actionX,
+    actionY,
+    gameState.entities._getRaw()
+  );
+
+  // priority to the top-most
+  const entity = entities.at(-1);
+  return entity ?? null;
+}
 
 export function useAppGlobalKeyboardShortcuts(gameState: GameState) {
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.repeat) return;
-      console.log("DOWN", e.key, ".");
+      // console.log("DOWN", e.key, ".");
       const interactionMode = gameState.interactionMode.peek();
 
       // Application Shortcuts
@@ -37,6 +84,18 @@ export function useAppGlobalKeyboardShortcuts(gameState: GameState) {
           case "d":
             char.vx += 1;
             break;
+          case " ": {
+            const entity = getEntityAtActionReach(char, gameState);
+            if (entity == null) {
+              gameState.gameCopy.set("nothing to interact");
+              break;
+            }
+            if (entity instanceof ItemEntity) {
+              gameState.gameCopy.set(entity.description);
+            }
+
+            break;
+          }
         }
       }
     };
@@ -72,5 +131,5 @@ export function useAppGlobalKeyboardShortcuts(gameState: GameState) {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
     };
-  }, [gameState.interactionMode]);
+  }, [gameState, gameState.interactionMode]);
 }

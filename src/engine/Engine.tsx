@@ -17,10 +17,11 @@ import {
 export type Point = { x: number; y: number };
 export type TPoint = { c: number; r: number };
 
-const TILE_SIZE = 16;
+export const TILE_SIZE = 16;
 const CANVAS_TWIDTH = 10;
 const CANVAS_THEIGHT = 10;
 const SCALING_FACTOR = 4;
+export const DEBUG_POSITIONS = false;
 
 class Render {
   static sprite(
@@ -37,8 +38,6 @@ class Render {
 const seenEntities = new WeakSet<Entity>();
 const seenTiles = new WeakSet<Tile>();
 
-export const DEBUG_POSITIONS = false;
-
 export type EngineClickHandler = (entities: Entity[], tile: Tile) => void;
 
 export function Engine({
@@ -47,7 +46,7 @@ export function Engine({
   onClick,
 }: {
   tileAt: (col: number, row: number) => Tile;
-  entities: Entity[];
+  entities: readonly Entity[];
   onClick?: EngineClickHandler;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -73,7 +72,7 @@ export function Engine({
 }
 
 function useEngineClickEvent(
-  entities: Entity[],
+  entities: readonly Entity[],
   tileAt: (col: number, row: number) => Tile,
   canvasRef: MutableRefObject<HTMLCanvasElement | null>,
   onClick?: EngineClickHandler
@@ -86,18 +85,7 @@ function useEngineClickEvent(
       const clickX = (e.clientX - rect.left) / SCALING_FACTOR;
       const clickY = (e.clientY - rect.top) / SCALING_FACTOR;
 
-      const clickedEntities = [];
-      for (const entity of entities) {
-        const { x, y, width, height } = entity;
-        if (
-          clickX > x &&
-          clickX < x + width &&
-          clickY > y &&
-          clickY < y + height
-        ) {
-          clickedEntities.push(entity);
-        }
-      }
+      const clickedEntities = entitiesAtPoint(clickX, clickY, entities);
 
       const row = (clickY / TILE_SIZE) >> 0;
       const col = (clickX / TILE_SIZE) >> 0;
@@ -112,7 +100,7 @@ function useEngineClickEvent(
 function useEngineLoop(
   canvasRef: MutableRefObject<HTMLCanvasElement | null>,
   tileAt: (col: number, row: number) => Tile,
-  entities: Entity[]
+  entities: readonly Entity[]
 ) {
   const [matterEngine] = useState<MatterEngine>(() =>
     MatterEngine.create({ gravity: { x: 0, y: 0 } })
@@ -211,10 +199,25 @@ function useEngineLoop(
 
     return () => {
       cancelAnimationFrame(nextRaf);
-      console.log("HERE");
+      // console.log("HERE");
       // for (const entity of entities) {
       //   entity.destroy();
       // }
     };
   }, [canvasRef, entities, matterEngine, tileAt]);
+}
+
+export function entitiesAtPoint(
+  px: number,
+  py: number,
+  entities: readonly Entity[]
+): Entity[] {
+  const result: Entity[] = [];
+  for (const entity of entities) {
+    const { x, y, width, height } = entity;
+    if (px > x && px < x + width && py > y && py < y + height) {
+      result.push(entity);
+    }
+  }
+  return result;
 }

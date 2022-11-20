@@ -1,5 +1,8 @@
 import { Sprite } from "../Sprite";
 
+/**
+ * An image containing multiple sprites
+ */
 export class TileMap {
   readonly image: HTMLImageElement;
   readonly tileSize: number;

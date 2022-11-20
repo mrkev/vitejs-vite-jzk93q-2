@@ -4,31 +4,11 @@ import { Engine } from "./engine/Engine";
 import { Entity } from "./engine/Entity";
 import { Tile } from "./engine/Tile";
 import { CharacterEntity } from "./CharacterEntity";
-import { Sprite } from "./Sprite";
 import { TileMap } from "./engine/TileMap";
 import { LoadingScreen } from "./LoadingScreen";
-import { SPrimitive, useLinkedState } from "s-state/LinkedState";
+import { useLinkedState } from "s-state/LinkedState";
 import { useAppGlobalKeyboardShortcuts } from "./useAppGlobalKeyboardShortcuts";
-
-export type TileSlot = [s: Sprite | null, collides: boolean];
-
-export function mapOfSpec(bg: TileSlot[][], fg: TileSlot[][]): Tile[][] {
-  const result = [];
-
-  for (let r = 0; r < bg.length; r++) {
-    const row: Tile[] = [];
-    result.push(row);
-    for (let c = 0; c < bg.length; c++) {
-      const [b, collides] = bg[r][c];
-      const [f, collides2] = fg[r][c];
-      row.push(
-        new Tile(f ? [f] : [], b ? [b] : [], collides || collides2, r, c)
-      );
-    }
-  }
-
-  return result;
-}
+import { GameState } from "./GameState";
 
 export default function App() {
   return (
@@ -48,50 +28,27 @@ export type EngineState = {
   entities: Entity[];
 };
 
-type InteractionMode =
-  | { kind: "editing" }
-  | { kind: "controlling"; character: CharacterEntity };
-
-export class GameState {
-  readonly interactionMode: SPrimitive<InteractionMode>;
-  constructor(interactionMode: InteractionMode) {
-    this.interactionMode = SPrimitive.of(interactionMode);
-  }
-}
-
 export function Game({
   assets,
-  engineState,
+  tileMap,
+  gameState,
 }: {
   assets: Assets;
-  engineState: EngineState;
+  tileMap: Tile[][];
+  gameState: GameState;
 }) {
-  const [gameState] = useState<GameState>(() => {
-    let interactionMode: InteractionMode = {
-      kind: "editing",
-    };
-    for (const entity of engineState.entities) {
-      if (entity instanceof CharacterEntity) {
-        interactionMode = {
-          kind: "controlling",
-          character: entity,
-        };
-      }
-    }
-    return new GameState(interactionMode);
-  });
-
   const [interactionMode, setInteractionMode] = useLinkedState(
     gameState.interactionMode
   );
+  const [message] = useLinkedState(gameState.gameCopy);
 
   useAppGlobalKeyboardShortcuts(gameState);
 
   const tileAt = useCallback(
     (c: number, r: number) => {
-      return engineState.tileMap[r][c];
+      return tileMap[r][c];
     },
-    [engineState.tileMap]
+    [tileMap]
   );
 
   return (
@@ -99,7 +56,7 @@ export function Game({
       {interactionMode.kind}
       <Engine
         tileAt={tileAt}
-        entities={engineState.entities}
+        entities={gameState.entities._getRaw()}
         onClick={(entities: Entity[], tile: Tile) => {
           // In reverese order to grab the entity that's stacked on top first
           for (let i = entities.length - 1; i >= 0; i--) {
@@ -115,6 +72,7 @@ export function Game({
           }
         }}
       />
+      {message}
     </div>
   );
 }

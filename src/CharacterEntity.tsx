@@ -1,6 +1,7 @@
-import { Entity } from "./engine/Entity";
+import { CollisionMode, Entity } from "./engine/Entity";
 import { Body } from "matter-js";
 import { Sprite } from "./Sprite";
+import { DEBUG_POSITIONS } from "./engine/Engine";
 
 type CharacterEntitySprites = {
   down: Sprite;
@@ -24,7 +25,7 @@ export class CharacterEntity extends Entity {
     x: number,
     y: number,
     sprites: CharacterEntitySprites,
-    collides: boolean = true
+    collides: CollisionMode = "collides"
   ) {
     const width = sprites.down.tileMap.tileSize;
     const height = sprites.down.tileMap.tileSize;
@@ -62,6 +63,36 @@ export class CharacterEntity extends Entity {
       ctx.fillStyle = "#65FF00";
       console.log("here");
       ctx.fillRect(this.x, this.y, this.width, this.height);
+    }
+
+    if (DEBUG_POSITIONS) {
+      const REACH = 4;
+      for (const dir of [0, 1, 2, 3]) {
+        let actionX, actionY;
+        switch (dir) {
+          case 0: {
+            actionX = this.x + this.width / 2;
+            actionY = this.y - REACH;
+            break;
+          }
+          case 1: {
+            actionX = this.x + this.width + REACH;
+            actionY = this.y + this.height / 2;
+            break;
+          }
+          case 2: {
+            actionX = this.x + this.width / 2;
+            actionY = this.y + this.height + REACH;
+            break;
+          }
+          case 3: {
+            actionX = this.x - REACH;
+            actionY = this.y + this.height / 2;
+            break;
+          }
+        }
+        ctx.fillRect(nullthrows(actionX) - 1, nullthrows(actionY) + 1, 2, 2);
+      }
     }
 
     switch (this.facing) {
@@ -107,6 +138,14 @@ export class CharacterEntity extends Entity {
   }
 }
 
-function exhaustive(x: never): never {
+export function exhaustive(x: never): never {
   throw new Error(`unexpected ${x} in switch statement`);
+}
+
+export function nullthrows<T>(x: T | null | undefined): T {
+  if (x == null) {
+    throw new Error("unexpected null");
+  } else {
+    return x;
+  }
 }

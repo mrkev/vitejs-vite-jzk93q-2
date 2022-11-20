@@ -1,5 +1,8 @@
 import { TileMap } from "./engine/TileMap";
 
+/**
+ * A single static or animated slice of a TileMap.
+ */
 export class Sprite {
   readonly tileMap: TileMap;
   readonly tilePositions: number[];
