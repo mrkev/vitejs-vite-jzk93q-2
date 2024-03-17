@@ -1,5 +1,5 @@
-import { Sprite } from "./Sprite";
 import { Bodies, Body } from "matter-js";
+import { Sprite } from "./Sprite";
 
 export class Tile {
   readonly fSprites: Sprite[];

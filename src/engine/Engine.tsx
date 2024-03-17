@@ -10,6 +10,8 @@ import {
   useRef,
   useState,
 } from "react";
+import { Entity } from "./Entity";
+import { Tile } from "./Tile";
 import {
   CANVAS_THEIGHT,
   CANVAS_TWIDTH,
@@ -17,8 +19,6 @@ import {
   SCALING_FACTOR,
   TILE_SIZE,
 } from "./engineGlobals";
-import { Entity } from "./Entity";
-import { Tile } from "./Tile";
 
 const seenEntities = new WeakSet<Entity>();
 const seenTiles = new WeakSet<Tile>();

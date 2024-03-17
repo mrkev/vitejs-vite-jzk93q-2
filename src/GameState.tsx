@@ -1,6 +1,6 @@
-import { CharacterEntity } from "./engine/CharacterEntity";
 import { LinkedArray } from "s-state/LinkedArray";
 import { SPrimitive } from "s-state/LinkedState";
+import { CharacterEntity } from "./engine/CharacterEntity";
 import { Entity } from "./engine/Entity";
 
 export type InteractionMode =
